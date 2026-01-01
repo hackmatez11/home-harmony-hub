@@ -1,40 +1,43 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-// Authentication middleware
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      return res.status(401).json({ message: 'No authentication token found' });
+    const authHeader = req.header("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Authentication required" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
-    const user = await User.findById(decoded.userId).select('-password');
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!user || !user.isActive) {
-      return res.status(401).json({ message: 'User not found or inactive' });
+    const user = await User.findById(decoded.userId).select("-password");
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Account deactivated" });
     }
 
     req.user = user;
     req.userId = user._id;
     next();
-  } catch (error) {
-    res.status(401).json({ message: 'Invalid or expired token' });
+  } catch (err) {
+    console.error("Auth error:", err.message);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
-// Role-based authorization middleware
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        message: `Access denied. Required role: ${roles.join(' or ')}` 
+      return res.status(403).json({
+        message: `Access denied — requires role: ${roles.join(", ")}`,
       });
     }
 
@@ -42,22 +45,22 @@ const authorize = (...roles) => {
   };
 };
 
-// Check subscription validity
-const checkSubscription = async (req, res, next) => {
+const checkSubscription = (req, res, next) => {
   try {
-    if (req.user.role === 'user' || req.user.role === 'admin') {
-      return next(); // Public users and admins don't need subscription
+    if (["user", "admin"].includes(req.user.role)) {
+      return next();
     }
 
     if (!req.user.isSubscriptionValid()) {
-      return res.status(403).json({ 
-        message: 'Subscription expired. Please renew your subscription.' 
+      return res.status(402).json({
+        message: "Subscription expired — please renew",
       });
     }
 
     next();
-  } catch (error) {
-    res.status(500).json({ message: 'Error checking subscription' });
+  } catch (err) {
+    console.error("Subscription check error:", err.message);
+    return res.status(500).json({ message: "Subscription check failed" });
   }
 };
 

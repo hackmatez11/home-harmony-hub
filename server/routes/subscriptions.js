@@ -1,32 +1,25 @@
-const express = require('express');
+import express from 'express';
+import {
+  getAllPlans,
+  getPlan,
+  subscribeToPlan,
+  getSubscriptionStatus,
+  cancelSubscription,
+} from '../controllers/subscriptionController.js';
+
+import { auth, authorize } from '../middleware/auth.js';
+
 const router = express.Router();
-const subscriptionController = require('../controllers/subscriptionController');
-const { auth, authorize } = require('../middleware/auth');
 
 // Public routes
-router.get('/plans', subscriptionController.getAllPlans);
-router.get('/plans/:planName', subscriptionController.getPlan);
+router.get('/plans', getAllPlans);
+router.get('/plans/:planName', getPlan);
 
 // Protected routes (Agency only)
-router.post(
-  '/subscribe',
-  auth,
-  authorize('agency'),
-  subscriptionController.subscribeToPlan
-);
+router.post('/subscribe', auth, authorize('agency'), subscribeToPlan);
 
-router.get(
-  '/status',
-  auth,
-  authorize('agency'),
-  subscriptionController.getSubscriptionStatus
-);
+router.get('/status', auth, authorize('agency'), getSubscriptionStatus);
 
-router.post(
-  '/cancel',
-  auth,
-  authorize('agency'),
-  subscriptionController.cancelSubscription
-);
+router.post('/cancel', auth, authorize('agency'), cancelSubscription);
 
-module.exports = router;
+export default router;

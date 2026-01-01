@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const propertySchema = new mongoose.Schema({
   title: {
@@ -41,7 +41,7 @@ const propertySchema = new mongoose.Schema({
   },
   images: [{
     url: String,
-    size: Number, // in bytes
+    size: Number, // bytes
     publicId: String
   }],
   bedrooms: {
@@ -114,14 +114,15 @@ const propertySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for search and filtering
+// Indexes
 propertySchema.index({ title: 'text', description: 'text' });
 propertySchema.index({ 'location.city': 1, propertyType: 1, price: 1 });
 propertySchema.index({ agencyId: 1, availability: 1 });
 
-// Virtual for total image size
-propertySchema.virtual('totalImageSize').get(function() {
+// Virtual: Total image size
+propertySchema.virtual('totalImageSize').get(function () {
   return this.images.reduce((total, img) => total + (img.size || 0), 0);
 });
 
-module.exports = mongoose.model('Property', propertySchema);
+const Property = mongoose.model('Property', propertySchema);
+export default Property;

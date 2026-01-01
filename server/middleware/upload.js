@@ -1,37 +1,56 @@
-const multer = require('multer');
-const path = require('path');
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
-// Configure storage
+// Ensure upload folder exists
+const uploadPath = path.join(__dirname, "..", "public/uploads");
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
+// Allowed image types
+const allowedTypes = /jpeg|jpg|png|gif|webp/i;
+
+// Storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/');
+    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
+    const uniqueName =
+      Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `property-${uniqueName}${ext}`);
+  },
 });
 
-// File filter for images only
+// File filter
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const ext = path.extname(file.originalname).toLowerCase();
   const mimetype = allowedTypes.test(file.mimetype);
 
-  if (mimetype && extname) {
-    return cb(null, true);
+  if (mimetype && allowedTypes.test(ext)) {
+    cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, webp)'));
+    cb(
+      new Error("Invalid file format! Only jpeg, jpg, png, gif, webp allowed"),
+      false
+    );
   }
 };
 
-// Configure multer
+// Multer config
 const upload = multer({
-  storage: storage,
+  storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB per file
+    fileSize: 5 * 1024 * 1024, // 5MB/file
+    files: 10,
   },
-  fileFilter: fileFilter
+  fileFilter,
 });
 
-module.exports = upload;
+// Export single/multiple upload helpers
+module.exports = {
+  uploadSingle: upload.single("image"),
+  uploadMultiple: upload.array("images", 10),
+};

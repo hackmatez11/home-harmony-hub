@@ -1,13 +1,11 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/realestate-saas';
-    
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const mongoURI =
+      process.env.MONGODB_URI || 'mongodb://localhost:27017/realestate-saas';
+
+    await mongoose.connect(mongoURI);
 
     console.log('✅ MongoDB connected successfully');
   } catch (error) {
@@ -16,4 +14,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+export default connectDB;

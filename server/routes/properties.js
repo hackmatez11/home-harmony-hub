@@ -1,12 +1,21 @@
-const express = require('express');
+import express from 'express';
+import {
+  getAllProperties,
+  getProperty,
+  createProperty,
+  updateProperty,
+  deleteProperty,
+  getAgencyProperties,
+} from '../controllers/propertyController.js';
+
+import { auth, authorize, checkSubscription } from '../middleware/auth.js';
+import upload from '../middleware/upload.js';
+
 const router = express.Router();
-const propertyController = require('../controllers/propertyController');
-const { auth, authorize, checkSubscription } = require('../middleware/auth');
-const upload = require('../middleware/upload');
 
 // Public routes
-router.get('/', propertyController.getAllProperties);
-router.get('/:id', propertyController.getProperty);
+router.get('/', getAllProperties);
+router.get('/:id', getProperty);
 
 // Protected routes (Agency/Broker only)
 router.post(
@@ -15,7 +24,7 @@ router.post(
   authorize('agency', 'broker'),
   checkSubscription,
   upload.array('images', 10),
-  propertyController.createProperty
+  createProperty
 );
 
 router.put(
@@ -24,21 +33,21 @@ router.put(
   authorize('agency', 'broker'),
   checkSubscription,
   upload.array('images', 10),
-  propertyController.updateProperty
+  updateProperty
 );
 
 router.delete(
   '/:id',
   auth,
   authorize('agency', 'broker'),
-  propertyController.deleteProperty
+  deleteProperty
 );
 
 router.get(
   '/agency/my-properties',
   auth,
   authorize('agency', 'broker'),
-  propertyController.getAgencyProperties
+  getAgencyProperties
 );
 
-module.exports = router;
+export default router;

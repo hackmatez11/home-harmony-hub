@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express';
+import { chatbot, voiceBot } from '../controllers/aiController.js';
+
 const router = express.Router();
-const aiController = require('../controllers/aiController');
 
 // Public AI endpoints
-router.post('/chatbot', aiController.chatbot);
-router.post('/voicebot', aiController.voiceBot);
+router.post('/chatbot', chatbot);
+router.post('/voicebot', voiceBot);
 
-module.exports = router;
+export default router;

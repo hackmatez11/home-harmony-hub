@@ -1,15 +1,19 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const connectDB = require('./config/database');
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const propertyRoutes = require('./routes/properties');
-const agencyRoutes = require('./routes/agencies');
-const subscriptionRoutes = require('./routes/subscriptions');
-const aiRoutes = require('./routes/ai');
+import connectDB from './config/database.js';
+
+// Import routes (add .js extension in ESM!)
+import authRoutes from './routes/auth.js';
+import propertyRoutes from './routes/properties.js';
+import agencyRoutes from './routes/agencies.js';
+import subscriptionRoutes from './routes/subscriptions.js';
+import aiRoutes from './routes/ai.js';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

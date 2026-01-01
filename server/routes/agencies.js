@@ -1,34 +1,37 @@
-const express = require('express');
+import express from 'express';
+import {
+  getAllAgencies,
+  getAgencyById,
+  getAgency,
+  updateAgency,
+  getDashboardStats,
+} from '../controllers/agencyController.js';
+
+import { auth, authorize } from '../middleware/auth.js';
+import upload from '../middleware/upload.js';
+
 const router = express.Router();
-const agencyController = require('../controllers/agencyController');
-const { auth, authorize } = require('../middleware/auth');
-const upload = require('../middleware/upload');
 
 // Public routes
-router.get('/all', agencyController.getAllAgencies);
-router.get('/public/:id', agencyController.getAgencyById);
+router.get('/all', getAllAgencies);
+router.get('/public/:id', getAgencyById);
 
 // Protected routes (Agency only)
-router.get(
-  '/profile',
-  auth,
-  authorize('agency'),
-  agencyController.getAgency
-);
+router.get('/profile', auth, authorize('agency'), getAgency);
 
 router.put(
   '/profile',
   auth,
   authorize('agency'),
   upload.single('logo'),
-  agencyController.updateAgency
+  updateAgency
 );
 
 router.get(
   '/dashboard/stats',
   auth,
   authorize('agency'),
-  agencyController.getDashboardStats
+  getDashboardStats
 );
 
-module.exports = router;
+export default router;

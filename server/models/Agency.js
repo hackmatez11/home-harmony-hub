@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const agencySchema = new mongoose.Schema({
   agencyName: {
@@ -92,20 +92,21 @@ const agencySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Method to check if subscription is valid
-agencySchema.methods.isSubscriptionValid = function() {
+// Method to check subscription status
+agencySchema.methods.isSubscriptionValid = function () {
   if (!this.subscription.endDate) return false;
   return new Date() < this.subscription.endDate;
 };
 
-// Method to check if storage limit is exceeded
-agencySchema.methods.hasStorageAvailable = function(additionalSize) {
+// Check storage limit
+agencySchema.methods.hasStorageAvailable = function (additionalSize) {
   return (this.storageUsed + additionalSize) <= this.subscription.storageLimit;
 };
 
-// Method to check if listing limit is reached
-agencySchema.methods.canAddListing = function() {
+// Check listing limit
+agencySchema.methods.canAddListing = function () {
   return this.properties.length < this.subscription.listingLimit;
 };
 
-module.exports = mongoose.model('Agency', agencySchema);
+const Agency = mongoose.model('Agency', agencySchema);
+export default Agency;
