@@ -1,115 +1,145 @@
-export interface Property {
+export interface User {
   id: string;
-  title: string;
-  description: string;
-  price: number;
-  currency: string;
-  location: {
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-    coordinates?: {
-      lat: number;
-      lng: number;
-    };
-    mapLink?: string;
-  };
-  type: 'apartment' | 'villa' | 'house' | 'plot' | 'commercial' | 'penthouse';
-  status: 'available' | 'sold' | 'unavailable' | 'pending';
-  features: {
-    bedrooms: number;
-    bathrooms: number;
-    area: number;
-    areaUnit: 'sqft' | 'sqm';
-    furnished: boolean;
-    parking: boolean;
-    yearBuilt?: number;
-  };
-  images: string[];
-  contact: {
-    name: string;
-    phone: string;
-    email: string;
-    whatsapp?: string;
-    instagram?: string;
-    website?: string;
-  };
-  agency: {
-    id: string;
-    name: string;
-    logo?: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-  featured: boolean;
-  views: number;
+  name: string;
+  email: string;
+  role: 'user' | 'agency' | 'broker' | 'admin';
+  phone?: string;
+  agencyId?: string;
+  subscriptionPlan?: string;
+  subscriptionValid?: boolean;
+  storageUsed?: number;
 }
 
 export interface Agency {
-  id: string;
-  name: string;
+  _id: string;
+  agencyName: string;
+  owner: string;
+  description?: string;
   email: string;
   phone: string;
-  logo?: string;
-  description?: string;
-  website?: string;
-  subscription: {
-    plan: 'basic' | 'pro' | 'enterprise';
-    status: 'active' | 'expired' | 'cancelled';
-    expiresAt: string;
-    storageUsed: number;
-    storageLimit: number;
-    listingsUsed: number;
-    listingsLimit: number;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
   };
+  logo?: string;
+  website?: string;
+  socialLinks?: {
+    instagram?: string;
+    whatsapp?: string;
+    facebook?: string;
+    linkedin?: string;
+  };
+  subscription: {
+    planName: string;
+    startDate: string;
+    endDate: string;
+    billingCycle: 'monthly' | 'yearly';
+    storageLimit: number;
+    listingLimit: number;
+  };
+  storageUsed: number;
   properties: string[];
-  createdAt: string;
+  isActive: boolean;
+  isVerified: boolean;
 }
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: 'user' | 'agency' | 'admin';
-  avatar?: string;
-  agencyId?: string;
-  savedProperties: string[];
-  preferences: {
-    language: string;
-    notifications: boolean;
+export interface Property {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  propertyType: 'apartment' | 'house' | 'villa' | 'condo' | 'townhouse' | 'land' | 'commercial' | 'office';
+  location: {
+    address: string;
+    city: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
   };
+  googleMapsLink?: string;
+  images: Array<{
+    url: string;
+    size: number;
+    publicId: string;
+  }>;
+  bedrooms: number;
+  bathrooms: number;
+  area?: {
+    value: number;
+    unit: 'sqft' | 'sqm';
+  };
+  furnished: 'furnished' | 'semi-furnished' | 'unfurnished';
+  availability: 'available' | 'sold' | 'rented' | 'unavailable';
+  listingType: 'sale' | 'rent';
+  features?: string[];
+  agencyId: Agency;
+  brokerId?: User;
+  contactDetails?: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    whatsapp?: string;
+  };
+  socialLinks?: {
+    instagram?: string;
+    whatsapp?: string;
+    website?: string;
+  };
+  views: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface SubscriptionPlan {
-  id: string;
-  name: string;
-  monthlyPrice: number;
-  annualPrice: number;
+  _id: string;
+  planName: 'basic' | 'pro' | 'enterprise';
+  displayName: string;
+  description: string;
+  priceMonthly: number;
+  priceYearly: number;
   storageLimit: number;
-  listingsLimit: number;
+  listingLimit: number;
   features: string[];
-  highlighted?: boolean;
+  isActive: boolean;
 }
 
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: string;
-  propertyCards?: Property[];
-}
-
-export interface FilterOptions {
-  priceMin?: number;
-  priceMax?: number;
-  location?: string;
-  type?: Property['type'][];
+export interface PropertyFilters {
+  search?: string;
+  propertyType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  city?: string;
   bedrooms?: number;
-  furnished?: boolean;
-  status?: Property['status'];
-  agency?: string;
-  sortBy?: 'price-asc' | 'price-desc' | 'newest' | 'popular';
+  furnished?: string;
+  availability?: string;
+  listingType?: string;
+  agencyId?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
 }
 
-export type Language = 'en' | 'es' | 'fr' | 'ar' | 'zh';
+export interface DashboardStats {
+  totalProperties: number;
+  availableProperties: number;
+  soldProperties: number;
+  totalViews: number;
+  storageUsed: number;
+  storageLimit: number;
+  storageUsedPercent: number;
+  listingCount: number;
+  listingLimit: number;
+  listingUsedPercent: number;
+  subscriptionValid: boolean;
+  subscriptionEndDate: string;
+}

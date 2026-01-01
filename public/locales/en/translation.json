@@ -1,0 +1,68 @@
+{
+  "common": {
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "loading": "Loading...",
+    "noResults": "No results found"
+  },
+  "nav": {
+    "home": "Home",
+    "properties": "Properties",
+    "agencies": "Agencies",
+    "pricing": "Pricing",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout"
+  },
+  "hero": {
+    "title": "Find Your Dream Property",
+    "subtitle": "Discover thousands of properties from trusted agencies worldwide",
+    "search": "Search by location, property type..."
+  },
+  "property": {
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "area": "Area",
+    "price": "Price",
+    "location": "Location",
+    "type": "Property Type",
+    "furnished": "Furnished",
+    "availability": "Availability",
+    "listedBy": "Listed by",
+    "contact": "Contact",
+    "viewDetails": "View Details"
+  },
+  "filters": {
+    "priceRange": "Price Range",
+    "propertyType": "Property Type",
+    "bedrooms": "Bedrooms",
+    "location": "Location",
+    "furnished": "Furnished Status",
+    "availability": "Availability",
+    "sortBy": "Sort By"
+  },
+  "subscription": {
+    "basic": "Basic",
+    "pro": "Professional",
+    "enterprise": "Enterprise",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "selectPlan": "Select Plan",
+    "currentPlan": "Current Plan"
+  },
+  "dashboard": {
+    "overview": "Overview",
+    "properties": "Properties",
+    "stats": "Statistics",
+    "storage": "Storage",
+    "subscription": "Subscription"
+  }
+}

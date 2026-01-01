@@ -1,0 +1,43 @@
+{
+  "common": {
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "reset": "Restablecer",
+    "apply": "Aplicar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "loading": "Cargando...",
+    "noResults": "No se encontraron resultados"
+  },
+  "nav": {
+    "home": "Inicio",
+    "properties": "Propiedades",
+    "agencies": "Agencias",
+    "pricing": "Precios",
+    "dashboard": "Panel",
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar Sesión"
+  },
+  "hero": {
+    "title": "Encuentra Tu Propiedad Ideal",
+    "subtitle": "Descubre miles de propiedades de agencias confiables en todo el mundo",
+    "search": "Buscar por ubicación, tipo de propiedad..."
+  },
+  "property": {
+    "bedrooms": "Habitaciones",
+    "bathrooms": "Baños",
+    "area": "Área",
+    "price": "Precio",
+    "location": "Ubicación",
+    "type": "Tipo de Propiedad",
+    "furnished": "Amueblado",
+    "availability": "Disponibilidad",
+    "listedBy": "Listado por",
+    "contact": "Contacto",
+    "viewDetails": "Ver Detalles"
+  }
+}
