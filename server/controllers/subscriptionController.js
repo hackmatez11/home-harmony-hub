@@ -1,23 +1,34 @@
-const SubscriptionPlan = require('../models/SubscriptionPlan');
-const Agency = require('../models/Agency');
-const User = require('../models/User');
+import SubscriptionPlan from '../models/SubscriptionPlan.js';
+import Agency from '../models/Agency.js';
+import User from '../models/User.js';
 
-// Get all subscription plans
-exports.getAllPlans = async (req, res) => {
+/* =========================
+   Get all subscription plans
+========================= */
+export const getAllPlans = async (req, res) => {
   try {
-    const plans = await SubscriptionPlan.find({ isActive: true }).sort({ priceMonthly: 1 });
+    const plans = await SubscriptionPlan
+      .find({ isActive: true })
+      .sort({ priceMonthly: 1 });
+
     res.json({ plans });
   } catch (error) {
     console.error('Get plans error:', error);
-    res.status(500).json({ message: 'Server error while fetching plans' });
+    res
+      .status(500)
+      .json({ message: 'Server error while fetching plans' });
   }
 };
 
-// Get single plan
-exports.getPlan = async (req, res) => {
+/* =========================
+   Get single plan
+========================= */
+export const getPlan = async (req, res) => {
   try {
-    const plan = await SubscriptionPlan.findOne({ planName: req.params.planName });
-    
+    const plan = await SubscriptionPlan.findOne({
+      planName: req.params.planName
+    });
+
     if (!plan) {
       return res.status(404).json({ message: 'Plan not found' });
     }
@@ -25,16 +36,24 @@ exports.getPlan = async (req, res) => {
     res.json({ plan });
   } catch (error) {
     console.error('Get plan error:', error);
-    res.status(500).json({ message: 'Server error while fetching plan' });
+    res
+      .status(500)
+      .json({ message: 'Server error while fetching plan' });
   }
 };
 
-// Subscribe to a plan (or upgrade/downgrade)
-exports.subscribeToPlan = async (req, res) => {
+/* =========================
+   Subscribe / Upgrade / Downgrade
+========================= */
+export const subscribeToPlan = async (req, res) => {
   try {
     const { planName, billingCycle = 'monthly', paymentMethod } = req.body;
 
-    const plan = await SubscriptionPlan.findOne({ planName, isActive: true });
+    const plan = await SubscriptionPlan.findOne({
+      planName,
+      isActive: true
+    });
+
     if (!plan) {
       return res.status(404).json({ message: 'Plan not found' });
     }
@@ -44,20 +63,24 @@ exports.subscribeToPlan = async (req, res) => {
       return res.status(404).json({ message: 'Agency not found' });
     }
 
-    // Calculate new dates
     const startDate = new Date();
     const endDate = new Date();
+
     if (billingCycle === 'monthly') {
       endDate.setMonth(endDate.getMonth() + 1);
     } else {
       endDate.setFullYear(endDate.getFullYear() + 1);
     }
 
-    // Mock payment processing
-    const paymentAmount = billingCycle === 'monthly' ? plan.priceMonthly : plan.priceYearly;
-    
-    // In a real app, you would integrate with Stripe, PayPal, etc.
-    console.log(`Processing payment of $${paymentAmount} via ${paymentMethod}`);
+    const paymentAmount =
+      billingCycle === 'monthly'
+        ? plan.priceMonthly
+        : plan.priceYearly;
+
+    // Mock payment gateway
+    console.log(
+      `Processing payment of $${paymentAmount} via ${paymentMethod}`
+    );
 
     // Update agency subscription
     agency.subscription.planName = planName;
@@ -88,19 +111,25 @@ exports.subscribeToPlan = async (req, res) => {
     });
   } catch (error) {
     console.error('Subscribe error:', error);
-    res.status(500).json({ message: 'Server error while processing subscription' });
+    res
+      .status(500)
+      .json({ message: 'Server error while processing subscription' });
   }
 };
 
-// Get current subscription status
-exports.getSubscriptionStatus = async (req, res) => {
+/* =========================
+   Get subscription status
+========================= */
+export const getSubscriptionStatus = async (req, res) => {
   try {
     const agency = await Agency.findOne({ owner: req.userId });
     if (!agency) {
       return res.status(404).json({ message: 'Agency not found' });
     }
 
-    const plan = await SubscriptionPlan.findOne({ planName: agency.subscription.planName });
+    const plan = await SubscriptionPlan.findOne({
+      planName: agency.subscription.planName
+    });
 
     res.json({
       subscription: {
@@ -108,27 +137,34 @@ exports.getSubscriptionStatus = async (req, res) => {
         isValid: agency.isSubscriptionValid(),
         planDetails: plan,
         storageUsed: agency.storageUsed,
-        storageUsedPercent: (agency.storageUsed / agency.subscription.storageLimit) * 100,
+        storageUsedPercent:
+          (agency.storageUsed / agency.subscription.storageLimit) * 100,
         listingCount: agency.properties.length,
-        listingUsedPercent: (agency.properties.length / agency.subscription.listingLimit) * 100
+        listingUsedPercent:
+          (agency.properties.length /
+            agency.subscription.listingLimit) *
+          100
       }
     });
   } catch (error) {
     console.error('Get subscription status error:', error);
-    res.status(500).json({ message: 'Server error while fetching subscription' });
+    res
+      .status(500)
+      .json({ message: 'Server error while fetching subscription' });
   }
 };
 
-// Cancel subscription
-exports.cancelSubscription = async (req, res) => {
+/* =========================
+   Cancel subscription
+========================= */
+export const cancelSubscription = async (req, res) => {
   try {
     const agency = await Agency.findOne({ owner: req.userId });
     if (!agency) {
       return res.status(404).json({ message: 'Agency not found' });
     }
 
-    // Set end date to now (immediate cancellation)
-    // In a real app, you might want to let them use until the period ends
+    // Immediate cancellation
     agency.subscription.endDate = new Date();
     await agency.save();
 
@@ -140,8 +176,8 @@ exports.cancelSubscription = async (req, res) => {
     res.json({ message: 'Subscription cancelled successfully' });
   } catch (error) {
     console.error('Cancel subscription error:', error);
-    res.status(500).json({ message: 'Server error while cancelling subscription' });
+    res
+      .status(500)
+      .json({ message: 'Server error while cancelling subscription' });
   }
 };
-
-module.exports = exports;

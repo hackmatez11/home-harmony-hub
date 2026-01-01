@@ -1,9 +1,9 @@
-const User = require('../models/User');
-const Agency = require('../models/Agency');
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import Agency from '../models/Agency.js';
 
 // Generate JWT token
-const generateToken = (userId) => {
+const generateToken = userId => {
   return jwt.sign(
     { userId },
     process.env.JWT_SECRET || 'your-secret-key-change-in-production',
@@ -12,7 +12,7 @@ const generateToken = (userId) => {
 };
 
 // Register new user
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const { name, email, password, role, phone } = req.body;
 
@@ -53,7 +53,7 @@ exports.register = async (req, res) => {
 };
 
 // Login user
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -97,12 +97,12 @@ exports.login = async (req, res) => {
 };
 
 // Register agency (combined user + agency)
-exports.registerAgency = async (req, res) => {
+export const registerAgency = async (req, res) => {
   try {
-    const { 
-      name, 
-      email, 
-      password, 
+    const {
+      name,
+      email,
+      password,
       phone,
       agencyName,
       agencyEmail,
@@ -118,7 +118,7 @@ exports.registerAgency = async (req, res) => {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-    // Create user first
+    // Create user
     const user = new User({
       name,
       email,
@@ -131,12 +131,13 @@ exports.registerAgency = async (req, res) => {
     // Set subscription dates
     const startDate = new Date();
     const endDate = new Date();
+
     if (billingCycle === 'monthly') {
       endDate.setMonth(endDate.getMonth() + 1);
     } else {
       endDate.setFullYear(endDate.getFullYear() + 1);
     }
-    
+
     user.subscriptionStartDate = startDate;
     user.subscriptionEndDate = endDate;
 
@@ -154,12 +155,18 @@ exports.registerAgency = async (req, res) => {
         startDate,
         endDate,
         billingCycle,
-        storageLimit: subscriptionPlan === 'basic' ? 1073741824 : 
-                     subscriptionPlan === 'pro' ? 5368709120 : 
-                     10737418240, // 1GB, 5GB, 10GB
-        listingLimit: subscriptionPlan === 'basic' ? 10 :
-                     subscriptionPlan === 'pro' ? 50 : 
-                     200
+        storageLimit:
+          subscriptionPlan === 'basic'
+            ? 1073741824 // 1GB
+            : subscriptionPlan === 'pro'
+            ? 5368709120 // 5GB
+            : 10737418240, // 10GB
+        listingLimit:
+          subscriptionPlan === 'basic'
+            ? 10
+            : subscriptionPlan === 'pro'
+            ? 50
+            : 200
       }
     });
 
@@ -189,12 +196,14 @@ exports.registerAgency = async (req, res) => {
     });
   } catch (error) {
     console.error('Agency register error:', error);
-    res.status(500).json({ message: 'Server error during agency registration' });
+    res
+      .status(500)
+      .json({ message: 'Server error during agency registration' });
   }
 };
 
 // Get current user profile
-exports.getProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.userId)
       .select('-password')

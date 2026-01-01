@@ -1,8 +1,9 @@
-const Agency = require('../models/Agency');
-const User = require('../models/User');
+import Agency from '../models/Agency.js';
+import User from '../models/User.js';
+import Property from '../models/Property.js';
 
 // Get agency details
-exports.getAgency = async (req, res) => {
+export const getAgency = async (req, res) => {
   try {
     const agency = await Agency.findOne({ owner: req.userId })
       .populate('owner', 'name email phone')
@@ -25,10 +26,10 @@ exports.getAgency = async (req, res) => {
 };
 
 // Update agency profile
-exports.updateAgency = async (req, res) => {
+export const updateAgency = async (req, res) => {
   try {
     const agency = await Agency.findOne({ owner: req.userId });
-    
+
     if (!agency) {
       return res.status(404).json({ message: 'Agency not found' });
     }
@@ -66,7 +67,7 @@ exports.updateAgency = async (req, res) => {
 };
 
 // Get agency by ID (public)
-exports.getAgencyById = async (req, res) => {
+export const getAgencyById = async (req, res) => {
   try {
     const agency = await Agency.findById(req.params.id)
       .populate('owner', 'name email phone')
@@ -84,7 +85,7 @@ exports.getAgencyById = async (req, res) => {
 };
 
 // Get all agencies (public)
-exports.getAllAgencies = async (req, res) => {
+export const getAllAgencies = async (req, res) => {
   try {
     const { page = 1, limit = 12, search } = req.query;
 
@@ -98,6 +99,7 @@ exports.getAllAgencies = async (req, res) => {
     }
 
     const skip = (Number(page) - 1) * Number(limit);
+
     const agencies = await Agency.find(query)
       .select('agencyName logo email phone address website socialLinks')
       .skip(skip)
@@ -122,33 +124,36 @@ exports.getAllAgencies = async (req, res) => {
 };
 
 // Get agency dashboard stats
-exports.getDashboardStats = async (req, res) => {
+export const getDashboardStats = async (req, res) => {
   try {
     const agency = await Agency.findOne({ owner: req.userId }).populate('properties');
-    
+
     if (!agency) {
       return res.status(404).json({ message: 'Agency not found' });
     }
 
-    const Property = require('../models/Property');
-    
     const stats = {
       totalProperties: agency.properties.length,
-      availableProperties: await Property.countDocuments({ 
-        agencyId: agency._id, 
-        availability: 'available' 
+      availableProperties: await Property.countDocuments({
+        agencyId: agency._id,
+        availability: 'available'
       }),
-      soldProperties: await Property.countDocuments({ 
-        agencyId: agency._id, 
-        availability: 'sold' 
+      soldProperties: await Property.countDocuments({
+        agencyId: agency._id,
+        availability: 'sold'
       }),
-      totalViews: agency.properties.reduce((sum, prop) => sum + (prop.views || 0), 0),
+      totalViews: agency.properties.reduce(
+        (sum, prop) => sum + (prop.views || 0),
+        0
+      ),
       storageUsed: agency.storageUsed,
       storageLimit: agency.subscription.storageLimit,
-      storageUsedPercent: (agency.storageUsed / agency.subscription.storageLimit) * 100,
+      storageUsedPercent:
+        (agency.storageUsed / agency.subscription.storageLimit) * 100,
       listingCount: agency.properties.length,
       listingLimit: agency.subscription.listingLimit,
-      listingUsedPercent: (agency.properties.length / agency.subscription.listingLimit) * 100,
+      listingUsedPercent:
+        (agency.properties.length / agency.subscription.listingLimit) * 100,
       subscriptionValid: agency.isSubscriptionValid(),
       subscriptionEndDate: agency.subscription.endDate
     };
@@ -159,5 +164,3 @@ exports.getDashboardStats = async (req, res) => {
     res.status(500).json({ message: 'Server error while fetching stats' });
   }
 };
-
-module.exports = exports;

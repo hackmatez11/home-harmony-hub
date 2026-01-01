@@ -9,7 +9,7 @@ import {
 } from '../controllers/propertyController.js';
 
 import { auth, authorize, checkSubscription } from '../middleware/auth.js';
-import upload from '../middleware/upload.js';
+import { uploadMultiple } from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.post(
   auth,
   authorize('agency', 'broker'),
   checkSubscription,
-  upload.array('images', 10),
+  uploadMultiple,
   createProperty
 );
 
@@ -32,7 +32,7 @@ router.put(
   auth,
   authorize('agency', 'broker'),
   checkSubscription,
-  upload.array('images', 10),
+  uploadMultiple,
   updateProperty
 );
 

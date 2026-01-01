@@ -8,7 +8,7 @@ import {
 } from '../controllers/agencyController.js';
 
 import { auth, authorize } from '../middleware/auth.js';
-import upload from '../middleware/upload.js';
+import { uploadSingle } from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.put(
   '/profile',
   auth,
   authorize('agency'),
-  upload.single('logo'),
+  uploadSingle,
   updateAgency
 );
 

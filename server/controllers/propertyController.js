@@ -1,10 +1,19 @@
-const Property = require('../models/Property');
-const Agency = require('../models/Agency');
-const fs = require('fs').promises;
-const path = require('path');
+import Property from '../models/Property.js';
+import Agency from '../models/Agency.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Get all properties with filters
-exports.getAllProperties = async (req, res) => {
+/* =========================
+   ESM __dirname Fix
+========================= */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/* =========================
+   Get all properties with filters
+========================= */
+export const getAllProperties = async (req, res) => {
   try {
     const {
       page = 1,
@@ -23,7 +32,6 @@ exports.getAllProperties = async (req, res) => {
       sortOrder = 'desc'
     } = req.query;
 
-    // Build query
     const query = { isActive: true };
 
     if (search) {
@@ -64,12 +72,12 @@ exports.getAllProperties = async (req, res) => {
       query.agencyId = agencyId;
     }
 
-    // Sort options
-    const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    const sortOptions = {
+      [sortBy]: sortOrder === 'desc' ? -1 : 1
+    };
 
-    // Execute query with pagination
     const skip = (Number(page) - 1) * Number(limit);
+
     const properties = await Property.find(query)
       .populate('agencyId', 'agencyName logo email phone')
       .populate('brokerId', 'name email phone')
@@ -94,8 +102,10 @@ exports.getAllProperties = async (req, res) => {
   }
 };
 
-// Get single property
-exports.getProperty = async (req, res) => {
+/* =========================
+   Get single property
+========================= */
+export const getProperty = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id)
       .populate('agencyId', 'agencyName logo email phone website socialLinks')
@@ -105,7 +115,6 @@ exports.getProperty = async (req, res) => {
       return res.status(404).json({ message: 'Property not found' });
     }
 
-    // Increment views
     property.views += 1;
     await property.save();
 
@@ -116,8 +125,10 @@ exports.getProperty = async (req, res) => {
   }
 };
 
-// Create new property
-exports.createProperty = async (req, res) => {
+/* =========================
+   Create new property
+========================= */
+export const createProperty = async (req, res) => {
   try {
     const {
       title,
@@ -137,33 +148,33 @@ exports.createProperty = async (req, res) => {
       socialLinks
     } = req.body;
 
-    // Get user's agency
     const agency = await Agency.findOne({ owner: req.userId });
     if (!agency) {
-      return res.status(404).json({ message: 'Agency not found. Please register as an agency first.' });
+      return res
+        .status(404)
+        .json({ message: 'Agency not found. Please register as an agency first.' });
     }
 
-    // Check subscription validity
     if (!agency.isSubscriptionValid()) {
-      return res.status(403).json({ message: 'Subscription expired. Please renew to add properties.' });
+      return res
+        .status(403)
+        .json({ message: 'Subscription expired. Please renew to add properties.' });
     }
 
-    // Check listing limit
     if (!agency.canAddListing()) {
-      return res.status(403).json({ 
-        message: `Listing limit reached. Your plan allows ${agency.subscription.listingLimit} properties. Please upgrade.` 
+      return res.status(403).json({
+        message: `Listing limit reached. Your plan allows ${agency.subscription.listingLimit} properties.`
       });
     }
 
-    // Process uploaded images
     const images = [];
     let totalImageSize = 0;
 
-    if (req.files && req.files.length > 0) {
+    if (req.files?.length) {
       for (const file of req.files) {
         const stat = await fs.stat(file.path);
         totalImageSize += stat.size;
-        
+
         images.push({
           url: `/uploads/${file.filename}`,
           size: stat.size,
@@ -171,20 +182,17 @@ exports.createProperty = async (req, res) => {
         });
       }
 
-      // Check storage limit
       if (!agency.hasStorageAvailable(totalImageSize)) {
-        // Delete uploaded files
         for (const file of req.files) {
           await fs.unlink(file.path).catch(console.error);
         }
-        
-        return res.status(403).json({ 
-          message: 'Storage limit exceeded. Please upgrade your plan or delete some properties.' 
+
+        return res.status(403).json({
+          message: 'Storage limit exceeded. Please upgrade your plan.'
         });
       }
     }
 
-    // Create property
     const property = new Property({
       title,
       description,
@@ -202,13 +210,18 @@ exports.createProperty = async (req, res) => {
       features: typeof features === 'string' ? JSON.parse(features) : features,
       agencyId: agency._id,
       brokerId: req.userId,
-      contactDetails: typeof contactDetails === 'string' ? JSON.parse(contactDetails) : contactDetails,
-      socialLinks: typeof socialLinks === 'string' ? JSON.parse(socialLinks) : socialLinks
+      contactDetails:
+        typeof contactDetails === 'string'
+          ? JSON.parse(contactDetails)
+          : contactDetails,
+      socialLinks:
+        typeof socialLinks === 'string'
+          ? JSON.parse(socialLinks)
+          : socialLinks
     });
 
     await property.save();
 
-    // Update agency
     agency.properties.push(property._id);
     agency.storageUsed += totalImageSize;
     await agency.save();
@@ -223,25 +236,31 @@ exports.createProperty = async (req, res) => {
   }
 };
 
-// Update property
-exports.updateProperty = async (req, res) => {
+/* =========================
+   Update property
+========================= */
+export const updateProperty = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
-    
     if (!property) {
       return res.status(404).json({ message: 'Property not found' });
     }
 
-    // Check ownership
     const agency = await Agency.findOne({ owner: req.userId });
     if (!property.agencyId.equals(agency._id)) {
-      return res.status(403).json({ message: 'You can only update your own properties' });
+      return res
+        .status(403)
+        .json({ message: 'You can only update your own properties' });
     }
 
-    // Update fields
     Object.keys(req.body).forEach(key => {
       if (req.body[key] !== undefined && key !== 'images') {
-        if (typeof req.body[key] === 'string' && (key === 'location' || key === 'area' || key === 'features' || key === 'contactDetails' || key === 'socialLinks')) {
+        if (
+          typeof req.body[key] === 'string' &&
+          ['location', 'area', 'features', 'contactDetails', 'socialLinks'].includes(
+            key
+          )
+        ) {
           property[key] = JSON.parse(req.body[key]);
         } else {
           property[key] = req.body[key];
@@ -249,15 +268,14 @@ exports.updateProperty = async (req, res) => {
       }
     });
 
-    // Handle new images if uploaded
-    if (req.files && req.files.length > 0) {
-      const newImages = [];
+    if (req.files?.length) {
       let totalNewImageSize = 0;
+      const newImages = [];
 
       for (const file of req.files) {
         const stat = await fs.stat(file.path);
         totalNewImageSize += stat.size;
-        
+
         newImages.push({
           url: `/uploads/${file.filename}`,
           size: stat.size,
@@ -265,63 +283,68 @@ exports.updateProperty = async (req, res) => {
         });
       }
 
-      // Check storage limit
       if (!agency.hasStorageAvailable(totalNewImageSize)) {
         for (const file of req.files) {
           await fs.unlink(file.path).catch(console.error);
         }
-        
-        return res.status(403).json({ 
-          message: 'Storage limit exceeded. Please upgrade your plan or delete some images.' 
+
+        return res.status(403).json({
+          message: 'Storage limit exceeded. Please upgrade your plan.'
         });
       }
 
-      property.images = [...property.images, ...newImages];
+      property.images.push(...newImages);
       agency.storageUsed += totalNewImageSize;
       await agency.save();
     }
 
     await property.save();
 
-    res.json({
-      message: 'Property updated successfully',
-      property
-    });
+    res.json({ message: 'Property updated successfully', property });
   } catch (error) {
     console.error('Update property error:', error);
     res.status(500).json({ message: 'Server error while updating property' });
   }
 };
 
-// Delete property
-exports.deleteProperty = async (req, res) => {
+/* =========================
+   Delete property
+========================= */
+export const deleteProperty = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
-    
     if (!property) {
       return res.status(404).json({ message: 'Property not found' });
     }
 
-    // Check ownership
     const agency = await Agency.findOne({ owner: req.userId });
     if (!property.agencyId.equals(agency._id)) {
-      return res.status(403).json({ message: 'You can only delete your own properties' });
+      return res
+        .status(403)
+        .json({ message: 'You can only delete your own properties' });
     }
 
-    // Calculate total image size
-    const totalImageSize = property.images.reduce((sum, img) => sum + (img.size || 0), 0);
+    const totalImageSize = property.images.reduce(
+      (sum, img) => sum + (img.size || 0),
+      0
+    );
 
-    // Delete image files
     for (const image of property.images) {
-      const imagePath = path.join(__dirname, '..', '..', 'public', image.url);
+      const imagePath = path.join(
+        __dirname,
+        '..',
+        '..',
+        'public',
+        image.url
+      );
       await fs.unlink(imagePath).catch(console.error);
     }
 
-    // Delete property
-    await Property.findByIdAndDelete(req.params.id);
+    await Property.findByIdAndDelete(property._id);
 
-    // Update agency
-    agency.properties = agency.properties.filter(id => !id.equals(property._id));
+    agency.properties = agency.properties.filter(
+      id => !id.equals(property._id)
+    );
     agency.storageUsed = Math.max(0, agency.storageUsed - totalImageSize);
     await agency.save();
 
@@ -332,17 +355,19 @@ exports.deleteProperty = async (req, res) => {
   }
 };
 
-// Get properties by agency
-exports.getAgencyProperties = async (req, res) => {
+/* =========================
+   Get properties by agency
+========================= */
+export const getAgencyProperties = async (req, res) => {
   try {
     const agency = await Agency.findOne({ owner: req.userId });
-    
     if (!agency) {
       return res.status(404).json({ message: 'Agency not found' });
     }
 
-    const properties = await Property.find({ agencyId: agency._id })
-      .sort({ createdAt: -1 });
+    const properties = await Property.find({ agencyId: agency._id }).sort({
+      createdAt: -1
+    });
 
     res.json({
       properties,
@@ -357,8 +382,8 @@ exports.getAgencyProperties = async (req, res) => {
     });
   } catch (error) {
     console.error('Get agency properties error:', error);
-    res.status(500).json({ message: 'Server error while fetching agency properties' });
+    res
+      .status(500)
+      .json({ message: 'Server error while fetching agency properties' });
   }
 };
-
-module.exports = exports;
