@@ -30,7 +30,7 @@ export default function Header() {
     { path: '/', label: 'Home' },
     { path: '/properties', label: 'Properties' },
     { path: '/about', label: 'About' },
-    { path: '/contact', label: 'Contact' },
+    // { path: '/contact', label: 'Contact' },
   ];
 
   return (

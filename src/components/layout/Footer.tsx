@@ -47,11 +47,11 @@ export default function Footer() {
                   About Us
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/contact" className="text-muted-foreground transition-colors hover:text-foreground">
                   Contact
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link to="/signup" className="text-muted-foreground transition-colors hover:text-foreground">
                   List Your Property
