@@ -14,13 +14,13 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Properties from "./pages/Properties";
 import PropertyDetails from "./pages/PropertyDetails";
-import Agencies from "./pages/Agencies";
-import AgencyDetails from "./pages/AgencyDetails";
+import Agencies from "./pages/AgenciesStub";
+import AgencyDetails from "./pages/AgencyDetailsStub";
 import Pricing from "./pages/Pricing";
 import Dashboard from "./pages/Dashboard";
-import DashboardProperties from "./pages/DashboardProperties";
-import AddProperty from "./pages/AddProperty";
-import EditProperty from "./pages/EditProperty";
+import DashboardProperties from "./pages/DashboardPropertiesStub";
+import AddProperty from "./pages/AddPropertyStub";
+import EditProperty from "./pages/EditPropertyStub";
 
 const queryClient = new QueryClient();
 

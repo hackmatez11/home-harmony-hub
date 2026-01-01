@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Building2, Users, Home, ArrowRight, Star, Shield, Clock } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Header from '@/components/layout/Header';
@@ -7,11 +9,25 @@ import Footer from '@/components/layout/Footer';
 import PropertyCard from '@/components/properties/PropertyCard';
 import Chatbot from '@/components/chat/Chatbot';
 import VoiceBot from '@/components/chat/VoiceBot';
-import { useApp } from '@/contexts/AppContext';
+import { propertyService } from '@/services/propertyService';
 
 export default function Index() {
-  const { state } = useApp();
-  const featuredProperties = state.properties.filter((p) => p.featured).slice(0, 3);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+  
+  const { data: propertiesData } = useQuery({
+    queryKey: ['featured-properties'],
+    queryFn: () => propertyService.getAll({ limit: 3, sortBy: 'views', sortOrder: 'desc' })
+  });
+  
+  const featuredProperties = propertiesData?.properties || [];
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/properties?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   const stats = [
     { icon: Building2, label: 'Properties Listed', value: '10,000+' },
@@ -84,9 +100,11 @@ export default function Index() {
             </Button>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featuredProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
-            ))}
+            {featuredProperties.length > 0 ? featuredProperties.map((property: any) => (
+              <PropertyCard key={property._id} property={property} />
+            )) : (
+              <p className="col-span-3 text-center text-muted-foreground">Loading featured properties...</p>
+            )}
           </div>
         </div>
       </section>
@@ -95,7 +113,7 @@ export default function Index() {
       <section className="bg-muted/50 py-20">
         <div className="container mx-auto px-4">
           <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="text-3xl font-bold">Why Choose PropHub</h2>
+            <h2 className="text-3xl font-bold">Why Choose Our Platform</h2>
             <p className="mt-2 text-muted-foreground">The trusted platform for finding your next property</p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
