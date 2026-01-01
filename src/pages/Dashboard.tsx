@@ -1,4 +1,4 @@
-import { useQuery } from '@tantml:query';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Building2, Home, Eye, TrendingUp, Plus } from 'lucide-react';
 import Header from '@/components/layout/Header';
